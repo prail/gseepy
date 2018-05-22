@@ -10,6 +10,8 @@ while True:
     if not temp: break
     data += temp
 
+sock.close()
+
 def handle_dir(line):
     print("[dir]", line[1])
 
