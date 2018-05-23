@@ -1,4 +1,4 @@
-import socket
+import socket, menu
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect(("gopher.floodgap.com", 70))
@@ -28,8 +28,6 @@ funs = {
 }
 
 data = data.decode("ascii")
-for line in data.split("\r\n"):
-    if line == ".": break
-    line = [line[0]] + line[1:].split("\t")
-    if not line[0] in funs: continue
-    funs[line[0]](line)
+p = menu.MenuParser(data)
+for i in range(2):
+    print("\n".join(map(str,p.parse_menu())))
