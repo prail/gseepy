@@ -15,89 +15,116 @@ class DirEntity:
         return self.__str__()
 
 class MenuParser:
+    """
+    Parses Gopher menus into DirEntity objects.
+    """
     def __init__(self, text):
-        self.text = text
-        self.i, self.char = -1, None
-        self.get_char()
+        self._text = text
+        self._i, self._char = -1, None
+        self._get_char()
 
-    def get_char(self):
-        self.i += 1
-        if self.i < len(self.text):
-            self.char = self.text[self.i]
+    def _get_char(self):
+        """
+        Get a character and store it in self._char if it tries to read over the text.
+        """
+        self._i += 1
+        if self._i < len(self._text):
+            self._char = self._text[self._i]
         else:
-            self.char = -1
+            self._char = -1
 
-    def error(self, msg):
+    def _error(self, msg):
         print(f"error: {msg}", file = sys.stderr) # put error here for match failure
         sys.exit(-1)
 
-    def match(self, c):
+    def _match(self, c):
         buf = ""
-        while self.char != -1 and len(c) > len(buf):
-            buf += self.char
-            self.get_char()
+        while self._char != -1 and len(c) > len(buf):
+            buf += self._char
+            self._get_char()
         if c != buf:
             c, buf = repr(c), repr(buf)
-            self.error(f"expected {c} not {buf}")
+            self._error(f"expected {c} not {buf}")
 
-    def grab_type(self):
-        c = self.char
+    def _grab_type(self):
+        """
+        Grabs a single type character and returns it.
+        """
+        c = self._char
         if not c in "0123456789+TgI" + "ih":
             c = repr(c)
-            self.error(f"unknown type {c}")
-        self.get_char()
+            self._error(f"unknown type {c}")
+        self._get_char()
         return c
 
-    def grab_unascii(self):
+    def _grab_unascii(self):
+        """
+        Grabs an ascii string that doesn't include NUL, Tab or CR-LF.
+        """
         unascii = ""
-        while self.char != -1 and not self.char in "\x00\t\r\n":
-            unascii += self.char
-            self.get_char()
+        while self._char != -1 and not self._char in "\x00\t\r\n":
+            unascii += self._char
+            self._get_char()
         return unascii
 
-    def grab_host(self):
+    def _grab_host(self):
+        """
+        Parses a host and returns it.
+        """
         host = ""
         while True:
-            while self.char != -1 and not self.char in ".\x00\t\r\n":
-                host += self.char
-                self.get_char()
-            if self.char == ".":
+            while self._char != -1 and not self._char in ".\x00\t\r\n":
+                host += self._char
+                self._get_char()
+            if self._char == ".":
                 host += "."
-                self.get_char()
+                self._get_char()
             else:
                 break
         return host
 
-    def grab_port(self):
+    def _grab_port(self):
+        """
+        Parses a port and returns an integer. If, there is no port it raises an error.
+        """
         port = ""
-        while self.char != -1 and self.char in "0123456789":
-            port += self.char
-            self.get_char()
+        while self._char != -1 and self._char in "0123456789":
+            port += self._char
+            self._get_char()
         if len(port) == 0:
-            self.error("port empty")
+            self._error("port empty")
         return int(port)
 
-    def parse_dir(self):
-        type_char = self.grab_type()
-        user_name = self.grab_unascii()
-        self.match("\t")
-        selector = self.grab_unascii()
-        self.match("\t")
-        host = self.grab_host()
-        self.match("\t")
-        port = self.grab_port()
-        self.match("\r\n")
+    def _parse_dir(self):
+        """
+        Parses a single directory entity and returns a new DirEntity object.
+        """
+        type_char = self._grab_type()
+        user_name = self._grab_unascii() #This gets the user_name field for the DirEntity
+        self._match("\t")
+        selector = self._grab_unascii() #This gets the selector.
+        self._match("\t")
+        host = self._grab_host()
+        self._match("\t")
+        port = self._grab_port()
+        self._match("\r\n")
         return DirEntity(type_char, user_name, selector, host, port)
     
     def parse_menu(self):
+        """
+        Returns a list of DirEntity objects.
+        """
         dirs = []
-        while self.char != -1 and self.char != ".":
-            dirs.append(self.parse_dir())
+        while self._char != -1 and self._char != ".":
+            dirs.append(self._parse_dir())
         return dirs
 
 def run_tests():
+    """
+    Runs tests on the MenuParser class.
+    """
     p = MenuParser(b"0\t\tgopher.example.com\t70\r\n".decode("ascii"))
-    print(p.parse_dir() == ("0", "", "", "gopher.example.com", 70))
+    print(p._parse_dir() == ("0", "", "", "gopher.example.com", 70))
 
 if __name__ == "__main__":
     run_tests()
