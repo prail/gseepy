@@ -8,13 +8,22 @@ class DirEntity:
         self.host = host
         self.port = port
 
+    def __eq__(self, other):
+        if type(other) != type(self): return False
+        if self.type != other.type: return False
+        if self.user_name != other.user_name: return False
+        if self.selector != other.selector: return False
+        if self.host != other.host: return False
+        if self.port != other.port: return False
+        return True
+
     def __str__(self):
         return str((self.type, self.user_name, self.selector, self.host, self.port))
     
     def __repr__(self):
         return self.__str__()
 
-class MenuParser:
+class Parser:
     """
     Parses Gopher menus into DirEntity objects.
     """
@@ -110,11 +119,12 @@ class MenuParser:
         self._match("\r\n")
         return DirEntity(type_char, user_name, selector, host, port)
     
-    def parse_menu(self):
+    def parse(self):
         """
         Returns a list of DirEntity objects.
         """
         dirs = []
+        # TODO implement correct handling of periods and lastline pattern
         while self._char != -1 and self._char != ".":
             dirs.append(self._parse_dir())
         return dirs
@@ -123,8 +133,8 @@ def run_tests():
     """
     Runs tests on the MenuParser class.
     """
-    p = MenuParser(b"0\t\tgopher.example.com\t70\r\n".decode("ascii"))
-    print(p._parse_dir() == ("0", "", "", "gopher.example.com", 70))
+    p = Parser(b"0\t\tgopher.example.com\t70\r\n".decode("ascii"))
+    print(p._parse_dir() == DirEntity("0", "", "", "gopher.example.com", 70))
 
 if __name__ == "__main__":
     run_tests()
