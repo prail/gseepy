@@ -133,8 +133,8 @@ def run_tests():
     """
     Runs tests on the MenuParser class.
     """
-    p = Parser(b"0\t\tgopher.example.com\t70\r\n".decode("ascii"))
-    print(p._parse_dir() == DirEntity("0", "", "", "gopher.example.com", 70))
+    p = Parser(b"0About prices\tPrices/aboutus\tserver.example.com\t70\r\n".decode("ascii"))
+    print(p._parse_dir())
 
 if __name__ == "__main__":
     run_tests()

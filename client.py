@@ -12,22 +12,7 @@ while True:
 
 sock.close()
 
-def handle_dir(line):
-    print("[dir]", line[1])
-
-def handle_text(line):
-    print("[txt]", line[1])
-
-def handle_info(line):
-    print(" " * 6 + line[1])
-
-funs = {
-    "0": handle_dir,
-    "1": handle_text,
-    "i": handle_info
-}
-
 data = data.decode("ascii")
-p = menu.MenuParser(data)
+p = menu.Parser(data)
 for i in range(2):
-    print("\n".join(map(str,p.parse_menu())))
+    print("\n".join(map(str,p.parse())))
